@@ -39,16 +39,65 @@
               {{ review.date }}
             </h6>
             <p class="card-text">{{ review.comment }}</p>
-            {% if user.is_authenticated and user == review.user %}
-            <a class="btn btn-primary"
-              href="{% url 'movies.edit_review' id=template_data.movie.id review_id=review.id %}">
-              Edit
-            </a>
-            <a class="btn btn-danger"
-              href="{% url 'movies.delete_review' id=template_data.movie.id review_id=review.id %}">
-              Delete
-            </a>
+            
+            <!-- Review action buttons -->
+            <div class="mb-3">
+              {% if user.is_authenticated and user == review.user %}
+              <a class="btn btn-primary btn-sm"
+                href="{% url 'movies.edit_review' id=template_data.movie.id review_id=review.id %}">
+                Edit
+              </a>
+              <a class="btn btn-danger btn-sm"
+                href="{% url 'movies.delete_review' id=template_data.movie.id review_id=review.id %}">
+                Delete
+              </a>
+              {% endif %}
+              
+              {% if user.is_authenticated %}
+              <button class="btn btn-outline-secondary btn-sm" type="button" 
+                      data-bs-toggle="collapse" data-bs-target="#reply-form-{{ review.id }}" 
+                      aria-expanded="false" aria-controls="reply-form-{{ review.id }}">
+                Reply
+              </button>
+              {% endif %}
+            </div>
+
+            <!-- Reply form (collapsed by default) -->
+            {% if user.is_authenticated %}
+            <div class="collapse" id="reply-form-{{ review.id }}">
+              <div class="card card-body mt-2 mb-3">
+                <form method="POST" action="{% url 'movies.create_reply' id=template_data.movie.id review_id=review.id %}">
+                  {% csrf_token %}
+                  <div class="mb-3">
+                    <label for="reply-comment-{{ review.id }}" class="form-label">Your Reply:</label>
+                    <textarea name="comment" required class="form-control" 
+                              id="reply-comment-{{ review.id }}" rows="3" 
+                              placeholder="Write your reply here..."></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-success btn-sm">Post Reply</button>
+                  <button class="btn btn-secondary btn-sm" type="button" 
+                          data-bs-toggle="collapse" data-bs-target="#reply-form-{{ review.id }}">
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            </div>
             {% endif %}
+
+            <!-- Display replies -->
+            {% for reply in review.get_replies %}
+            <div class="ms-4 mt-3 p-3 border-start border-3 border-secondary bg-light">
+              <h6 class="fw-bold mb-1">{{ reply.user.username }}</h6>
+              <small class="text-muted">{{ reply.date }}</small>
+              <p class="mt-2 mb-2">{{ reply.comment }}</p>
+              {% if user.is_authenticated and user == reply.user %}
+              <a class="btn btn-outline-danger btn-sm" 
+                 href="{% url 'movies.delete_reply' id=template_data.movie.id reply_id=reply.id %}">
+                Delete Reply
+              </a>
+              {% endif %}
+            </div>
+            {% endfor %}
           </li>
           {% endfor %}
         </ul>

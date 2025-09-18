@@ -6,5 +6,6 @@ urlpatterns = [
     path('<int:id>/review/create/', views.create_review, name='movies.create_review'),
     path('<int:id>/review/<int:review_id>/edit/', views.edit_review, name='movies.edit_review'),
     path('<int:id>/review/<int:review_id>/delete/', views.delete_review, name='movies.delete_review'),
-
+    path('<int:id>/review/<int:review_id>/reply/create/', views.create_reply, name='movies.create_reply'),
+    path('<int:id>/reply/<int:reply_id>/delete/', views.delete_reply, name='movies.delete_reply'),
 ]
