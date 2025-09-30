@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">{{ template_data.petition.movie_title }}</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h5>Movie Description</h5>
+                        <p class="text-muted">{{ template_data.petition.description }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Why this movie should be added</h5>
+                        <p class="text-muted">{{ template_data.petition.reason }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> Petitioned by <strong>{{ template_data.petition.created_by.username }}</strong>
+                            on {{ template_data.petition.created_at|date:"F d, Y \a\t g:i A" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Voting Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-vote-yea"></i> Community Votes
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-success">
+                                <i class="fas fa-thumbs-up fa-2x"></i>
+                                <h4 class="mt-2">{{ template_data.petition.get_upvotes }}</h4>
+                                <small>Upvotes</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-danger">
+                                <i class="fas fa-thumbs-down fa-2x"></i>
+                                <h4 class="mt-2">{{ template_data.petition.get_downvotes }}</h4>
+                                <small>Downvotes</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Total Votes: {{ template_data.petition.get_vote_count }}</strong>
+                    </div>
+
+                    {% if user.is_authenticated %}
+                        {% if template_data.user_vote %}
+                            <div class="alert alert-info small mb-3">
+                                You have {{ template_data.user_vote.vote_type }}voted this petition.
+                                Click the same button to remove your vote.
+                            </div>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'movies.vote_petition' template_data.petition.id %}">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="vote_type" value="up" 
+                                        class="btn {% if template_data.user_vote.vote_type == 'up' %}btn-success{% else %}btn-outline-success{% endif %}">
+                                    <i class="fas fa-thumbs-up"></i> 
+                                    {% if template_data.user_vote.vote_type == 'up' %}Remove Upvote{% else %}Upvote{% endif %}
+                                </button>
+                                <button type="submit" name="vote_type" value="down" 
+                                        class="btn {% if template_data.user_vote.vote_type == 'down' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                    <i class="fas fa-thumbs-down"></i> 
+                                    {% if template_data.user_vote.vote_type == 'down' %}Remove Downvote{% else %}Downvote{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <a href="{% url 'accounts.login' %}">Login</a> to vote on this petition.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'movies.petitions_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Petitions
+                        </a>
+                        
+                        {% if user.is_authenticated and user == template_data.petition.created_by or user.is_staff %}
+                            <a href="{% url 'movies.delete_petition' template_data.petition.id %}" 
+                               class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i> Delete Petition
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Petition Stats -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Petition Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-12 mb-2">
+                            <small class="text-muted">Net Score</small>
+                            <h5 class="{% if template_data.petition.get_upvotes > template_data.petition.get_downvotes %}text-success{% elif template_data.petition.get_upvotes < template_data.petition.get_downvotes %}text-danger{% else %}text-muted{% endif %}">
+                                {% widthratio template_data.petition.get_upvotes 1 1 %}{% widthratio template_data.petition.get_downvotes 1 -1 %}
+                            </small>
+                        </div>
+                        {% if template_data.petition.get_vote_count > 0 %}
+                            <div class="col-12">
+                                <small class="text-muted">Approval Rate</small>
+                                <h6>{% widthratio template_data.petition.get_upvotes template_data.petition.get_vote_count 100 %}%</h6>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Delete Petition
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> This action cannot be undone!
+                    </div>
+
+                    <p>Are you sure you want to delete the following petition?</p>
+                    
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ template_data.petition.movie_title }}</h5>
+                            <p class="card-text">{{ template_data.petition.description|truncatewords:30 }}</p>
+                            <small class="text-muted">
+                                Created by {{ template_data.petition.created_by.username }} 
+                                on {{ template_data.petition.created_at|date:"M d, Y" }}
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                Current votes: {{ template_data.petition.get_upvotes }} upvotes, 
+                                {{ template_data.petition.get_downvotes }} downvotes
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Yes, Delete Petition
+                            </button>
+                        </form>
+                        <a href="{% url 'movies.petition_detail' template_data.petition.id %}" 
+                           class="btn btn-secondary ms-2">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

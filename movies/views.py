@@ -1,6 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review, Reply
+from .models import Movie, Review, Reply, Petition, Vote
+from .forms import PetitionForm
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 def index(request):
     search_term = request.GET.get('search')
@@ -80,3 +84,101 @@ def delete_reply(request, id, reply_id):
     reply = get_object_or_404(Reply, id=reply_id, user=request.user)
     reply.delete()
     return redirect('movies.show', id=id)
+
+# Petition Views
+def petitions_list(request):
+    """Display all active petitions"""
+    petitions = Petition.objects.filter(is_active=True)
+    template_data = {
+        'title': 'Movie Petitions',
+        'petitions': petitions
+    }
+    return render(request, 'movies/petitions_list.html', {'template_data': template_data})
+
+@login_required
+def create_petition(request):
+    """Create a new movie petition"""
+    if request.method == 'POST':
+        form = PetitionForm(request.POST)
+        if form.is_valid():
+            petition = form.save(commit=False)
+            petition.created_by = request.user
+            petition.save()
+            messages.success(request, 'Your movie petition has been created successfully!')
+            return redirect('movies.petitions_list')
+    else:
+        form = PetitionForm()
+    
+    template_data = {
+        'title': 'Create Movie Petition',
+        'form': form
+    }
+    return render(request, 'movies/create_petition.html', {'template_data': template_data})
+
+def petition_detail(request, petition_id):
+    """Display petition details"""
+    petition = get_object_or_404(Petition, id=petition_id, is_active=True)
+    user_vote = petition.get_user_vote(request.user) if request.user.is_authenticated else None
+    
+    template_data = {
+        'title': f'Petition: {petition.movie_title}',
+        'petition': petition,
+        'user_vote': user_vote
+    }
+    return render(request, 'movies/petition_detail.html', {'template_data': template_data})
+
+@login_required
+@require_POST
+def vote_petition(request, petition_id):
+    """Handle voting on petitions"""
+    petition = get_object_or_404(Petition, id=petition_id, is_active=True)
+    vote_type = request.POST.get('vote_type')
+    
+    if vote_type not in ['up', 'down']:
+        messages.error(request, 'Invalid vote type.')
+        return redirect('movies.petition_detail', petition_id=petition_id)
+    
+    # Check if user has already voted
+    existing_vote = petition.get_user_vote(request.user)
+    
+    if existing_vote:
+        if existing_vote.vote_type == vote_type:
+            # User is trying to vote the same way again, remove the vote
+            existing_vote.delete()
+            messages.info(request, 'Your vote has been removed.')
+        else:
+            # User is changing their vote
+            existing_vote.vote_type = vote_type
+            existing_vote.save()
+            messages.success(request, f'Your vote has been changed to {vote_type}vote.')
+    else:
+        # Create new vote
+        Vote.objects.create(
+            petition=petition,
+            user=request.user,
+            vote_type=vote_type
+        )
+        messages.success(request, f'You have {vote_type}voted for this petition.')
+    
+    return redirect('movies.petition_detail', petition_id=petition_id)
+
+@login_required
+def delete_petition(request, petition_id):
+    """Delete a petition (only by creator or admin)"""
+    petition = get_object_or_404(Petition, id=petition_id)
+    
+    if request.user != petition.created_by and not request.user.is_staff:
+        messages.error(request, 'You do not have permission to delete this petition.')
+        return redirect('movies.petition_detail', petition_id=petition_id)
+    
+    if request.method == 'POST':
+        petition.is_active = False  # Soft delete
+        petition.save()
+        messages.success(request, 'Petition has been deleted.')
+        return redirect('movies.petitions_list')
+    
+    template_data = {
+        'title': 'Delete Petition',
+        'petition': petition
+    }
+    return render(request, 'movies/delete_petition.html', {'template_data': template_data})

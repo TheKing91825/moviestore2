@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-plus-circle"></i> Create Movie Petition
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Request a movie to be added to our catalog. Other users will be able to vote on your petition.
+                    </p>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ template_data.form.movie_title.id_for_label }}" class="form-label">
+                                {{ template_data.form.movie_title.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ template_data.form.movie_title }}
+                            {% if template_data.form.movie_title.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in template_data.form.movie_title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ template_data.form.description.id_for_label }}" class="form-label">
+                                {{ template_data.form.description.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ template_data.form.description }}
+                            {% if template_data.form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in template_data.form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ template_data.form.reason.id_for_label }}" class="form-label">
+                                {{ template_data.form.reason.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ template_data.form.reason }}
+                            {% if template_data.form.reason.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in template_data.form.reason.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'movies.petitions_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Petitions
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Submit Petition
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Tips for a successful petition:</h6>
+                    <ul class="mb-0">
+                        <li>Provide a clear and accurate movie title</li>
+                        <li>Include relevant details like genre, year, and plot summary</li>
+                        <li>Explain why this movie would be a valuable addition to our catalog</li>
+                        <li>Be respectful and constructive in your reasoning</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
