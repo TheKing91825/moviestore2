@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container">
+    <div class="row justify-content-center mt-5">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">{{ template_data.title }}</h3>
+          </div>
+          <div class="card-body">
+            <p class="text-muted mb-4">
+              Select your region to see trending movies in your area and contribute to regional trending data.
+            </p>
+            
+            <form method="POST">
+              {% csrf_token %}
+              
+              <div class="mb-3">
+                {{ template_data.form.region.label_tag }}
+                {{ template_data.form.region }}
+                {% if template_data.form.region.help_text %}
+                  <small class="form-text text-muted">{{ template_data.form.region.help_text }}</small>
+                {% endif %}
+                {% if template_data.form.region.errors %}
+                  <div class="text-danger">{{ template_data.form.region.errors }}</div>
+                {% endif %}
+              </div>
+              
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Update Region
+                </button>
+                <a href="{% url 'trending.map' %}" class="btn btn-secondary">
+                  <i class="fas fa-times"></i> Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Region Descriptions</h5>
+            <ul class="list-unstyled">
+              <li class="mb-2"><strong>Northeast:</strong> ME, NH, VT, MA, RI, CT, NY, NJ, PA</li>
+              <li class="mb-2"><strong>Southeast:</strong> DE, MD, VA, WV, NC, SC, GA, FL, KY, TN, AL, MS, AR, LA</li>
+              <li class="mb-2"><strong>Midwest:</strong> OH, IN, IL, MI, WI, MN, IA, MO, ND, SD, NE, KS</li>
+              <li class="mb-2"><strong>Southwest:</strong> TX, OK, NM, AZ</li>
+              <li class="mb-2"><strong>West:</strong> CO, WY, MT, ID, UT, NV, CA, OR, WA, AK, HI</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
