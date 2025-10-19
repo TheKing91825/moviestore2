@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
-from .froms import SignUpForm, UpdateRegionForm, CustomErrorList
+from .forms import SignUpForm, UpdateRegionForm, CustomErrorList
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
