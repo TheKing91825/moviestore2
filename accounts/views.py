@@ -4,6 +4,7 @@ from .forms import SignUpForm, UpdateRegionForm, CustomErrorList
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib import messages
 
 @login_required
 def logout(request):
@@ -35,16 +36,19 @@ def signup(request):
     template_data = {}
     template_data['title'] = 'Sign Up'
 
-    if request.method == 'GET':
-        return render(request, 'accounts/signup.html', {'template_data': template_data})
-    elif request.method == 'POST':
+    if request.method == 'POST':
+        form = SignUpForm(request.POST, error_class=CustomErrorList) 
+        
         if form.is_valid():
             form.save()
+            messages.success(request, 'Account created successfully. Please log in.')
             return redirect('accounts.login')
-        else:
-            template_data['form'] = form
-            return render(request, 'accounts/signup.html', {'template_data': template_data})
-        
+    else:
+        form = SignUpForm() 
+
+    template_data['form'] = form
+    return render(request, 'accounts/signup.html', {'template_data': template_data})
+
 @login_required
 def orders(request):
     template_data = {}
